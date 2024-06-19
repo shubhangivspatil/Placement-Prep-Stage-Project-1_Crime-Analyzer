@@ -45,3 +45,4 @@ How to reach out for more information or collaboration.
 
 **Additional Resources**
 Links to the live dashboard, additional documentation, or related projects
+https://drive.google.com/file/d/1BzsxHn5KT6Gq8pfanAmXrE_8d6hoMQWy/view?usp=drive_link
