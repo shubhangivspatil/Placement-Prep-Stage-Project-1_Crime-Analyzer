@@ -8,6 +8,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from xgboost import XGBClassifier
 import time
+import matplotlib.pyplot as plt
+import seaborn as sns
 from streamlit_folium import st_folium
 
 # Optimized function to load and preprocess data
@@ -48,6 +50,64 @@ def train_model(X_train, y_train, model_type):
     model.fit(X_train, y_train)
     return model
 
+# Function for Advanced EDA
+def advanced_eda(data):
+    st.title('Advanced EDA on Chicago Crime Data')
+    
+    # Display basic statistics of the dataset
+    st.subheader('Descriptive Statistics')
+    st.write(data.describe(include='all'))
+
+    # Pie chart of crime types
+    st.subheader('Distribution of Crime Types')
+    crime_counts = data['Primary Type'].value_counts()
+    plt.figure(figsize=(10, 8))
+    plt.pie(crime_counts, labels=crime_counts.index, autopct='%1.1f%%', startangle=140, colors=sns.color_palette("Set3", len(crime_counts)))
+    plt.axis('equal')  # Equal aspect ratio ensures that pie chart is a circle
+    st.pyplot(plt)
+
+    # Line chart of crimes over the years
+    st.subheader('Crimes Over the Years')
+    yearly_crime_counts = data['Year'].value_counts().sort_index()
+    plt.figure(figsize=(12, 6))
+    plt.plot(yearly_crime_counts.index.astype(str), yearly_crime_counts.values, marker='o', linestyle='-', color='b')
+    plt.title('Total Crimes per Year', fontsize=16)
+    plt.xlabel('Year', fontsize=12)
+    plt.ylabel('Number of Crimes', fontsize=12)
+    plt.xticks(rotation=45)
+    st.pyplot(plt)
+
+    # Box plot of arrests by crime type
+    st.subheader('Arrests by Crime Type')
+    plt.figure(figsize=(14, 8))
+    sns.boxplot(x='Primary Type', y='Arrest', data=data, palette='Set2')
+    plt.title('Box Plot of Arrests by Crime Type', fontsize=16)
+    plt.xticks(rotation=45)
+    plt.xlabel('Crime Type', fontsize=12)
+    plt.ylabel('Arrest (True/False)', fontsize=12)
+    st.pyplot(plt)
+
+    # Countplot of arrests by month
+    st.subheader('Arrests by Month')
+    plt.figure(figsize=(12, 6))
+    sns.countplot(x='Month', hue='Arrest', data=data, palette='Set2')
+    plt.title('Arrests by Month', fontsize=16)
+    plt.xlabel('Month', fontsize=12)
+    plt.ylabel('Count', fontsize=12)
+    plt.xticks(rotation=45)
+    st.pyplot(plt)
+
+    # Trend of arrests over the years
+    st.subheader('Trend of Arrests Over the Years')
+    arrests_trend = data[data['Arrest'] == True]['Year'].value_counts().sort_index()
+    plt.figure(figsize=(12, 6))
+    plt.plot(arrests_trend.index.astype(str), arrests_trend.values, marker='o', linestyle='-', color='red')
+    plt.title('Trend of Arrests Over the Years', fontsize=16)
+    plt.xlabel('Year', fontsize=12)
+    plt.ylabel('Number of Arrests', fontsize=12)
+    plt.xticks(rotation=45)
+    st.pyplot(plt)
+
 def main():
     # Load the data at the start of the main function
     data = load_data()
@@ -72,7 +132,7 @@ def main():
 
     # Sidebar Navigation
     st.sidebar.title("Chicago Crime Data Analysis")
-    page = st.sidebar.radio("Select a Page", ["Crime Hotspots", "Predictive Crime Modeling", "Detailed Insights"])
+    page = st.sidebar.radio("Select a Page", ["Crime Hotspots", "Predictive Crime Modeling", "Detailed Insights", "Advanced EDA"])
 
     if page == "Crime Hotspots":
         st.title('Crime Hotspots in Chicago')
@@ -122,22 +182,23 @@ def main():
     elif page == "Detailed Insights":
         st.title('Detailed Crime Reports and Insights')
         st.subheader('Recommendations')
-        st.text("""
+        st.text(""" 
         - Enhance Surveillance in high-risk areas.
         - Align law enforcement staffing with crime trends for better resource allocation.
-        - Foster stronger community policing efforts.
-        - Use data-driven approaches to optimize patrol routes.
-        - Increase public awareness and engagement.
+        - Foster stronger community relations to gather intelligence.
+        - Invest in youth programs to address root causes of crime.
         """)
+        st.subheader('Explore Crime Trends')
+        if st.button('Show Crime Trends'):
+            st.line_chart(data['Year'].value_counts().sort_index())
 
-        st.subheader('Conclusion')
-        st.write("""
-        Implementing these recommendations can lead to significant reductions in crime rates and enhance public safety, ensuring a more secure environment for the community.
-        """)
+    elif page == "Advanced EDA":
+        advanced_eda(data)
 
-    if st.sidebar.button('Save Processed Data'):
-        filtered_data.to_csv('Processed_Crime_Data.csv', index=False)
-        st.success('Data saved successfully!')
+    # Footer
+    st.write("<hr>", unsafe_allow_html=True)
+    st.write("Created by Shubhangi V Patil")
+    st.write("Project on Chicago Crime Data Analysis")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
